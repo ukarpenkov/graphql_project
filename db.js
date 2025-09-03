@@ -5,6 +5,6 @@ module.exports = {
   ],
   users: [
     { id: 123, name: "John Doe" },
-    { id: 456, name: "Jane Doe" }
-  ]
-}
+    { id: 456, name: "Jane Doe" },
+  ],
+};
