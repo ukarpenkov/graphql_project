@@ -1,11 +1,19 @@
 import { useState } from "react";
 import { Button, FormControl, Input } from "@chakra-ui/react";
 import { useMutation } from "@apollo/client";
-import { ADD_TODO } from "../apollo/todos";
+import { ADD_TODO, ALL_TODOS } from "../apollo/todos";
 
 const AddTodo = () => {
   const [text, setText] = useState("");
-  const [AddTodo, { error }] = useMutation(ADD_TODO);
+  const [AddTodo, { error }] = useMutation(ADD_TODO, {
+    update(cache, { data: { newTodo } }) {
+      const { todos } = cache.readQuery({ query: ALL_TODOS });
+      cache.writeQuery({
+        query: ALL_TODOS,
+        data: { todos: [...todos, newTodo] },
+      });
+    },
+  });
 
   const handleAddTodo = () => {
     if (text.trim().length) {
@@ -36,5 +44,4 @@ const AddTodo = () => {
     </FormControl>
   );
 };
-
 export default AddTodo;

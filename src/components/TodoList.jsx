@@ -3,11 +3,21 @@ import { Spinner } from "@chakra-ui/react";
 
 import TodoItem from "./TodoItem";
 import TotalCount from "./TotalCount";
-import { useQuery } from "@apollo/client";
-import { ALL_TODOS } from "../apollo/todos";
+import { useMutation, useQuery } from "@apollo/client";
+import { ALL_TODOS, REMOVE_TODO, UPDATE_TODO } from "../apollo/todos";
 
 const TodoList = () => {
   const { loading, error, data } = useQuery(ALL_TODOS);
+  const [toggleTodo, { error: updateError }] = useMutation(UPDATE_TODO);
+  const [removeTodo, { error: removeError }] = useMutation(REMOVE_TODO, {
+    update(cache, { data: { removeTodo } }) {
+      const { todos } = cache.readQuery({ query: ALL_TODOS });
+      cache.writeQuery({
+        query: ALL_TODOS,
+        data: { todos: todos.filter((t) => t.id !== removeTodo.id) },
+      });
+    },
+  });
 
   if (loading) return <Spinner />;
   if (error) return <h3>Error: {error.message}</h3>;
@@ -16,7 +26,12 @@ const TodoList = () => {
     <>
       <VStack spacing={2} mt={4}>
         {data.todos.map((todo) => (
-          <TodoItem key={todo.id} {...todo} />
+          <TodoItem
+            key={todo.id}
+            {...todo}
+            onToggle={toggleTodo}
+            onDelete={removeTodo}
+          />
         ))}
       </VStack>
       <TotalCount />
